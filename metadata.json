@@ -1,0 +1,6 @@
+{
+  "name": "مكتب المعماري للتصميم الداخلي",
+  "description": "الموقع التعريفي لمكتب المعماري الهندسي المتخصص في التصميم الداخلي وتفاصيل التنفيذ الدقيقة",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

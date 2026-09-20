@@ -1,0 +1,411 @@
+@import "tailwindcss";
+
+/*
+  ============================================================
+  hover: يعمل افتراضيًا في Tailwind v4 كـ :hover عادي بلا قيد،
+  ما يجعله "عالقًا" على الشاشات اللمسية (لمسة = hover دائم حتى
+  لمسة أخرى). هذا التعريف يقيّد كل استخدامات hover: في المشروع
+  بأجهزة تدعم hover حقيقي وبدقة مؤشر فعلية (فأرة).
+  ============================================================
+*/
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+/*
+  ============================================================
+  نظام الألوان المركزي. كل ألوان الموقع تُعرَّف هنا فقط، ولا
+  توجد قيمة hex واحدة داخل ملفات المكوّنات.
+  ============================================================
+*/
+@theme {
+  --color-office-bg: #141516;      /* أسود محايد، خلفية الموقع الأساسية */
+  --color-office-surface: #1B1D1F; /* سطح مرتفع درجة واحدة عن الخلفية */
+  --color-office-ink: #F2EFE7;     /* النص الأساسي، عاجي دافئ */
+  --color-office-blue: #5C82B8;    /* أزرق المكتب، للرسوم الفنية فقط */
+  --color-office-gold: #C9A13B;    /* الذهبي، التمييز الوحيد في اللوحة */
+  --color-office-gold-soft: #E0C071;/* درجة أفتح للتدرجات والتحويم فقط */
+  --color-office-muted: #AEA99E;   /* رمادي دافئ، نصوص ثانوية */
+  --color-office-line: #262728;    /* خط تقسيم داكن خفيف */
+  --color-office-on-gold: #141516; /* نص فوق الأسطح الذهبية */
+  --color-office-on-dark: #F2EFE7; /* نص فوق الصور الداكنة */
+}
+
+/*
+  ============================================================
+  قفل الشكل (Shape Lock) وسلّم الطبقات ومنحنيات الحركة.
+
+  المشروع كان يستخدم خمسة أنصاف أقطار مختلفة بلا قاعدة
+  (rounded-sm, rounded-[8px], rounded-[10px], 14px, full)، وهذا
+  أحد أسباب الإحساس بأن الصفحة مكوّنة من تصميمين. القاعدة الآن
+  واحدة ومكتوبة:
+
+    صدفة خارجية (بطاقة، لوحة)  -> --radius-shell
+    نواة داخلية داخل الصدفة    -> --radius-core
+    حقل إدخال أو زر مستطيل     -> --radius-field
+    عنصر تفاعلي دائري (وسم)     -> rounded-full
+
+  لا يوجد نصف قطر سادس في المشروع.
+  ============================================================
+*/
+@layer base {
+  :root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);       /* دخول وخروج العناصر */
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* حركة على الشاشة */
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);    /* لوحات منزلقة */
+    --ease-gentle: cubic-bezier(0.45, 0, 0.55, 1);    /* حركة محيطية خفيفة */
+
+    --radius-shell: 14px;
+    --radius-core: 9px;   /* = 14 - 5 (حشوة الصدفة) لانحناءات متحدة المركز */
+    --radius-field: 6px;
+
+    /* سلّم الطبقات النظامية. لا رقم z خام في أي مكوّن. */
+    --z-base: 1;        /* محتوى داخل قسم */
+    --z-sticky: 10;     /* الهيرو المثبّت */
+    --z-rail: 20;       /* شريط تقدّم المراحل داخل قسمه */
+    --z-nav: 30;        /* الشريط العلوي */
+    --z-progress: 40;   /* مؤشر تمرير الصفحة */
+    --z-intro: 50;      /* شاشة المقدمة */
+    --z-overlay: 60;    /* صفحة تفاصيل المشروع */
+    --z-lightbox: 70;   /* المعاينة المكبّرة */
+    --z-grain: 80;      /* طبقة الحبيبات، بلا تفاعل */
+    --z-cursor: 90;     /* هالة المؤشر، بلا تفاعل */
+
+    --nav-height: 76px;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    overflow-x: hidden;
+    font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-office-bg);
+    color: var(--color-office-ink);
+    scroll-behavior: smooth;
+
+    /* يمنع اختفاء عنوان القسم تحت الشريط العلوي عند الانتقال بنقرة. */
+    scroll-padding-top: calc(var(--nav-height) + 24px);
+  }
+
+  /*
+    اقتران الخطوط: El Messiri للعناوين، IBM Plex Sans Arabic
+    للنص والواجهة.
+
+    Reem Kufi وTajawal استُبدلا لأنهما من أكثر خطي الويب العربي
+    استهلاكًا (يظهران في نسبة كبيرة من المواقع العربية المبنية
+    بالذكاء الاصطناعي)، فلا يمنحان الهوية أي تمييز. El Messiri
+    يحتفظ بروح كوفية معاصرة لكنه أكثر دفئًا وانحناءً من Reem Kufi
+    الهندسي الصارم، وهو ما يلائم مكتبًا يتحدث عن "سكون الفراغ"
+    لا عن التقنية الباردة. IBM Plex Sans Arabic عائلة موثوقة
+    التصميم بامتداد لاتيني قوي (يهمّنا هنا لأن الأرقام صارت
+    لاتينية)، وتمنح النص وضوحًا لا يقل عن Tajawal دون أن تتكرر
+    في كل موقع عربي آخر.
+  */
+  h1, h2, h3, blockquote {
+    font-family: 'El Messiri', 'IBM Plex Sans Arabic', sans-serif;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* الأرقام بعرض ثابت فلا "ترقص" الأعمدة عند تغيّر القيمة. */
+  table, .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-office-gold) 25%, transparent);
+    color: var(--color-office-ink);
+  }
+
+  /* حلقة تركيز موحّدة لكل عنصر تفاعلي، تعريف واحد للمشروع كله. */
+  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-office-gold);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/*
+  ============================================================
+  الحركة المخفّضة: حارس عام واحد على مستوى الوثيقة، يوقف حركات
+  CSS كلها ويُبقي التلاشي اللوني الذي يساعد على الفهم.
+  ============================================================
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.12s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.font-display {
+  font-family: 'El Messiri', 'IBM Plex Sans Arabic', sans-serif;
+}
+
+/* اسم الصنف بقي font-tajawal تاريخيًا رغم تغيّر الخط تحته، لتفادي
+   تعديل كل موضع يستدعيه. الخط الفعلي الآن IBM Plex Sans Arabic. */
+.font-tajawal {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+}
+
+/* ============ الطباعة ============ */
+
+/* مسح ضوئي بطيء جدًا عبر حروف العنوان الرئيسي. */
+@keyframes lightSweep {
+  0%   { background-position: 100% 50%; }
+  50%  { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.hero-heading-glow {
+  background: linear-gradient(
+    115deg,
+    #F2EFE7 0%,
+    #F2EFE7 38%,
+    #FFFFFF 48%,
+    #E9CF87 52%,
+    #FFFFFF 56%,
+    #F2EFE7 66%,
+    #F2EFE7 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: lightSweep 12s var(--ease-in-out) infinite;
+}
+
+/* نص بخط خارجي فقط. مخصّص لأرقام المراحل الضخمة في قسم منهجية
+   التنفيذ، وهو الموضع الوحيد الذي يحمل فيه الرقم معنى تسلسليًا. */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--color-office-ink) 20%, transparent);
+}
+
+.text-outline-gold {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--color-office-gold) 55%, transparent);
+}
+
+/* ============ حركات مساعدة ============ */
+
+@keyframes drawGoldLine {
+  0%   { transform: scaleX(0); opacity: 0.2; }
+  70%  { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0.85; }
+}
+
+/* ينمو على transform لا على width، فلا يُشغّل حساب تخطيط. */
+.animate-draw-line {
+  transform-origin: right;
+  animation: drawGoldLine 1.2s var(--ease-out) forwards;
+}
+
+/* ظهور حالة نجاح النموذج. يبدأ من scale(0.95) لا من الصفر:
+   لا شيء في العالم الحقيقي يظهر من العدم. */
+@keyframes gentleReveal {
+  from { opacity: 0; transform: translateY(6px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-gentle-reveal {
+  animation: gentleReveal 420ms var(--ease-out) forwards;
+}
+
+/* شريط متحرك بسرعة ثابتة. linear هو المنحنى الصحيح الوحيد لحركة
+   مستمرة، وأي منحنى آخر يُنتج تسارعًا وتباطؤًا مرئيًا في الحلقة. */
+@keyframes marqueeRTL {
+  from { transform: translateX(0); }
+  to   { transform: translateX(50%); }
+}
+
+.animate-marquee {
+  animation: marqueeRTL 42s linear infinite;
+}
+
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to left, transparent, #000 12%, #000 88%, transparent);
+}
+
+/*
+  تنفّس بطيء جدًا لهالات الضوء المحيطة (22 ثانية للدورة، إزاحة
+  بضعة بكسلات وتغيّر شفافية طفيف). الغرض ليس الزينة: السطح الداكن
+  الساكن تمامًا يقرأ كصورة ميتة، وحركة بهذا البطء تُدرَك كإضاءة
+  حيّة لا كعنصر يتحرك. transform و opacity فقط.
+*/
+@keyframes ambientDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.55; }
+  50%      { transform: translate3d(2%, -3%, 0) scale(1.08); opacity: 0.9; }
+}
+
+.animate-ambient {
+  animation: ambientDrift 22s var(--ease-gentle) infinite;
+}
+
+.animate-ambient-slow {
+  animation: ambientDrift 31s var(--ease-gentle) infinite reverse;
+}
+
+/* رسم خطوط المخطط الهندسي عند دخوله الشاشة. */
+@keyframes drawStroke {
+  to { stroke-dashoffset: 0; }
+}
+
+/* قفزة خفيفة للسهم في شاشة المقدمة. الإزاحة 5 بكسلات فقط: الغرض
+   الإشارة إلى اتجاه الحركة المطلوبة، لا جذب الانتباه. */
+@keyframes nudgeUp {
+  0%, 100% { transform: translateY(3px); }
+  50%      { transform: translateY(-5px); }
+}
+
+.animate-nudge-up {
+  animation: nudgeUp 1.9s var(--ease-gentle) infinite;
+}
+
+/* دوران بالغ البطء لحلقة البوصلة خلف اسم المكتب في المقدمة. */
+@keyframes slowSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-slow-spin {
+  animation: slowSpin 48s linear infinite;
+}
+
+.animate-slow-spin-reverse {
+  animation: slowSpin 72s linear infinite reverse;
+}
+
+/* ============ أسطح ولغة بصرية معمارية ============ */
+
+.blueprint-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(242, 239, 231, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(242, 239, 231, 0.06) 1px, transparent 1px);
+}
+
+.blueprint-grid-fine {
+  background-size: 16px 16px;
+  background-image:
+    linear-gradient(to right, rgba(242, 239, 231, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(242, 239, 231, 0.035) 1px, transparent 1px);
+}
+
+/*
+  الحافة المزدوجة (Double-Bezel): صدفة خارجية بحدّ شعري وحشوة
+  صغيرة تحتضن نواة داخلية لها ضوءها العلوي الخاص. هذا هو نظام
+  الأسطح الوحيد في الموقع: كل بطاقة ولوحة ونموذج يستخدمه، ولا
+  توجد بطاقات بحدّ عادي إلى جانبه كما كان سابقًا.
+*/
+.bezel {
+  background: color-mix(in srgb, var(--color-office-ink) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-office-ink) 9%, transparent);
+  border-radius: var(--radius-shell);
+  padding: 5px;
+}
+
+.bezel-core {
+  border-radius: var(--radius-core);
+  background: var(--color-office-surface);
+  box-shadow: inset 0 1px 0 rgba(242, 239, 231, 0.06);
+  overflow: hidden;
+}
+
+/*
+  حدّ يضيء تحت المؤشر. الموضع يأتي من متغيّرين يحدّثهما JS على
+  العنصر نفسه لا على الأب، فلا يُعاد حساب أنماط كل الأبناء عند
+  كل حركة مؤشر.
+*/
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    240px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--color-office-gold) 55%, transparent),
+    transparent 70%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 240ms var(--ease-out);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+}
+
+/*
+  طبقة الحبيبات: ثابتة، بلا تفاعل، فوق كل شيء. تكسر السطوح
+  الرقمية المسطّحة. مثبّتة (fixed) عمدًا، لأن إلحاقها بحاوية
+  تتمرر يجبر GPU على إعادة رسمها في كل إطار تمرير.
+*/
+.grain-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* شريط تمرير داخلي رفيع للطبقات القابلة للتمرير. */
+.slim-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-office-gold) 45%, transparent) transparent;
+}
+.slim-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.slim-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-office-gold) 45%, transparent);
+  border-radius: 999px;
+}
+.slim-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* يمنع قفز التخطيط عند إخفاء تمرير الصفحة خلف طبقة مفتوحة. */
+.scroll-locked {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* رابط "تخطَّ إلى المحتوى"، مخفي حتى يصله التركيز بلوحة المفاتيح. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  inset-inline-start: 8px;
+  z-index: 100;
+  transform: translateY(-160%);
+  transition: transform 180ms var(--ease-out);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
