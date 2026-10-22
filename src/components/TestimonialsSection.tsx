@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Quotes } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, Quotes } from '@phosphor-icons/react';
 import { SectionShell, SectionHeading } from './Section';
 import { Reveal } from './Reveal';
 import { Testimonial } from '../types';
@@ -9,23 +9,15 @@ import { Testimonial } from '../types';
  * ============================================================
  * آراء الملّاك.
  *
- * تاريخ القسم: جدار اقتباسات غير متماثل، شهادة كبيرة وثلاث
- * بطاقات محاطة بإطارات إلى جانبها. المشكلة أن الأربع تُعرض دفعة
- * واحدة بأوزان مختلفة، فتتنافس على الانتباه: العين لا تعرف أتقرأ
- * الكبيرة أم تمسح الصغيرات، والبطاقات المؤطّرة تجعل الشهادة تبدو
- * منتجًا معروضًا لا كلامًا قاله شخص.
- *
- * الشكل الحالي: شهادة واحدة معروضة بحجم كبير في كل لحظة، وإلى
+ * تاريخ القسم:
+ * الشكل المكتبي: شهادة واحدة معروضة بحجم كبير في كل لحظة، وإلى
  * جانبها قائمة بأسماء أصحاب الشهادات الأربع. اسم واحد نشط،
  * والبقية تنتظر النقر أو التحويم.
  *
- * لماذا هذا أفضل هنا: الشهادة نص يُقرأ لا بيان يُمسح، وإفراد
- * مساحة كاملة لواحدة يعطيها فرصة أن تُقرأ فعلًا. والقائمة إلى
- * جانبها تُبقي العدد ظاهرًا، فلا يظن الزائر أن لدى المكتب رأيًا
- * واحدًا.
- *
- * لا دوران تلقائي: النص يتبدّل تحت عين القارئ فيقطع عليه الجملة.
- * التبديل بفعل الزائر وحده.
+ * على الموبايل: تحويل العرض إلى سلايدر أفقي (Carousel) لبطاقات
+ * الشهادات بأسلوب scroll-snap مع مؤشر نقاط وأسهم تنقل.
+ * هذا يمنع التمرير العمودي الطويل وتراكم الأسماء عموديًا، ويتيح
+ * للزائر تصفح كل شهادة مع سياقها ومشروعها بتمريرة واحدة سريعة.
  * ============================================================
  */
 
@@ -70,9 +62,13 @@ export const TestimonialsSection: React.FC = () => {
     <SectionShell id="testimonials-section">
       <SectionHeading eyebrow="آراء الملّاك" title="ما قالوه بعد استلام المفتاح." compact />
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
+      {/* ——— على الموبايل والشاشات الصغيرة (< lg): سلايدر أفقي سلس ——— */}
+      <MobileTestimonialsCarousel testimonials={testimonials} />
+
+      {/* ——— على الشاشات الكبيرة (lg+): العرض التحريري المقروء ——— */}
+      <div className="hidden lg:grid grid-cols-12 gap-14">
         {/* ——— الشهادة المعروضة ——— */}
-        <div className="lg:col-span-7">
+        <div className="col-span-7">
           <Quotes
             className="mb-6 h-9 w-9 text-[var(--color-office-gold)]/50"
             weight="fill"
@@ -81,7 +77,7 @@ export const TestimonialsSection: React.FC = () => {
 
           {/* ارتفاع أدنى ثابت: بدونه يقفز ما تحت الاقتباس كلما
               تبدّل النص بين شهادة طويلة وأخرى قصيرة. */}
-          <div className="min-h-[9.5rem] sm:min-h-[11rem]">
+          <div className="min-h-[11rem]">
             <AnimatePresence mode="wait" initial={false}>
               <motion.blockquote
                 key={current.author}
@@ -125,7 +121,7 @@ export const TestimonialsSection: React.FC = () => {
             بلا إطارات: صفوف مفصولة بخط شعري. المؤشر الذهبي عنصر
             واحد ينتقل بين الصفوف بـ layoutId، فيُقرأ كانتقال لا
             كظهور واختفاء. */}
-        <div className="lg:col-span-5">
+        <div className="col-span-5">
           <ul className="border-t border-[var(--color-office-ink)]/10">
             {testimonials.map((t, i) => {
               const isActive = active === i;
@@ -169,7 +165,6 @@ export const TestimonialsSection: React.FC = () => {
                         {t.project}
                       </span>
                     </span>
-
                   </button>
                 </Reveal>
               );
@@ -180,3 +175,169 @@ export const TestimonialsSection: React.FC = () => {
     </SectionShell>
   );
 };
+
+/**
+ * ============================================================
+ * سلايدر شهادات الموبايل (أقل من lg)
+ * ============================================================
+ */
+interface MobileTestimonialsCarouselProps {
+  testimonials: Testimonial[];
+}
+
+const MobileTestimonialsCarousel: React.FC<MobileTestimonialsCarouselProps> = ({
+  testimonials,
+}) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
+
+  /** تتبع الشريحة النشطة عبر قياس الموضع بالنسبة للحاوية */
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const containerRect = el.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    Array.from(el.children).forEach((child, i) => {
+      const childRect = (child as HTMLElement).getBoundingClientRect();
+      const childCenter = childRect.left + childRect.width / 2;
+      const distance = Math.abs(containerCenter - childCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    });
+
+    setActiveIndex(closestIndex);
+  }, []);
+
+  /** التمرير المبرمج إلى شهادة بعينها */
+  const scrollTo = useCallback((idx: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const child = el.children[idx] as HTMLElement | undefined;
+    child?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, []);
+
+  return (
+    <div className="block lg:hidden">
+      {/* ——— حاوية التمرير الأفقي ——— */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="mobile-carousel -mx-5 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-3 pt-1"
+        role="region"
+        aria-label="آراء الملّاك — اسحب يمينًا ويسارًا"
+      >
+        {testimonials.map((t, index) => (
+          <motion.div
+            key={t.author}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{
+              duration: 0.45,
+              ease: EASE,
+              delay: reduceMotion ? 0 : index * 0.05,
+            }}
+            className="relative flex w-[85vw] max-w-[370px] shrink-0 snap-center flex-col justify-between border border-[var(--color-office-ink)]/10 bg-[var(--color-office-paper)]/40 p-6 text-right"
+          >
+            <div>
+              {/* رأس البطاقة: أيقونة الاقتباس وتسمية المشروع */}
+              <div className="mb-4 flex items-center justify-between">
+                <Quotes
+                  className="h-7 w-7 text-[var(--color-office-gold)]/60"
+                  weight="fill"
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] font-normal text-[var(--color-office-gold)]">
+                  {t.project}
+                </span>
+              </div>
+
+              {/* نص الاقتباس */}
+              <blockquote className="text-base leading-[1.85] font-normal text-[var(--color-office-ink)]">
+                «{t.quote}»
+              </blockquote>
+            </div>
+
+            {/* صاحب الشهادة وموقعه */}
+            <div className="mt-6 flex items-center gap-3 border-t border-[var(--color-office-ink)]/10 pt-4">
+              <span
+                aria-hidden="true"
+                className="h-8 w-[2px] rounded-full bg-[var(--color-office-gold)]"
+              />
+              <div>
+                <span className="block text-sm font-medium text-[var(--color-office-ink)]">
+                  {t.author}
+                </span>
+                <span className="block text-[11px] font-light text-[var(--color-office-muted)]/75">
+                  {t.role}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ——— شريط التحكم: أسهم + مؤشر نقاط ——— */}
+      <div className="mt-4 flex items-center justify-center gap-3">
+        {/* زر السابق (يمين في RTL) */}
+        <button
+          onClick={() => {
+            const next = Math.min(activeIndex + 1, testimonials.length - 1);
+            setActiveIndex(next);
+            scrollTo(next);
+          }}
+          disabled={activeIndex >= testimonials.length - 1}
+          aria-label="الشهادة السابقة"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-25 cursor-pointer"
+        >
+          <CaretRight className="h-3.5 w-3.5" weight="bold" />
+        </button>
+
+        {/* مؤشر النقاط */}
+        <div className="flex items-center gap-1.5">
+          {testimonials.map((t, i) => (
+            <button
+              key={t.author}
+              onClick={() => {
+                setActiveIndex(i);
+                scrollTo(i);
+              }}
+              aria-label={`الانتقال إلى شهادة ${t.author}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ease-[var(--ease-out)] cursor-pointer ${
+                i === activeIndex
+                  ? 'w-6 bg-[var(--color-office-gold)]'
+                  : 'w-1.5 bg-[var(--color-office-ink)]/20 hover:bg-[var(--color-office-ink)]/40'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* زر التالي (يسار في RTL) */}
+        <button
+          onClick={() => {
+            const next = Math.max(activeIndex - 1, 0);
+            setActiveIndex(next);
+            scrollTo(next);
+          }}
+          disabled={activeIndex <= 0}
+          aria-label="الشهادة التالية"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-25 cursor-pointer"
+        >
+          <CaretLeft className="h-3.5 w-3.5" weight="bold" />
+        </button>
+      </div>
+    </div>
+  );
+};
+

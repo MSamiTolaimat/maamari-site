@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { ArrowUpLeft } from '@phosphor-icons/react';
+import { ArrowUpLeft, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { SmartImage } from './SmartImage';
 import { SectionShell, SectionEyebrow } from './Section';
 import { RevealWords, DrawLine } from './Reveal';
@@ -34,11 +34,34 @@ interface ProjectsGalleryProps {
  *    "عنوان كبير يمينًا وفقرة شارحة يسارًا" يُنتج تركيزًا مشتتًا:
  *    العين لا تعرف أتقرأ العنوان أم تمسح الفقرة، وأي واحد يُقرأ
  *    أولًا. الترويسة الآن عمود واحد: وسم، عنوان، خط.
+ *
+ * 6. على الموبايل (أقل من md): الشبكة تحوّلت إلى سلايدر أفقي
+ *    (carousel) بدل عمود واحد من البطاقات الكاملة. هذا يُقلّل
+ *    التمرير العمودي بشكل كبير، ويجعل التصفّح أسرع.
  * ============================================================
  */
+
+/** هل الشاشة أضيق من نقطة الكسر md (768px)؟ */
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 export const ProjectsGallery: React.FC<ProjectsGalleryProps> = ({ onOpenProject }) => {
   const [filter, setFilter] = useState<ProjectType | 'all'>('all');
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
   const visible = useMemo(
     () => (filter === 'all' ? projects : projects.filter((p) => p.type === filter)),
@@ -114,22 +137,25 @@ export const ProjectsGallery: React.FC<ProjectsGalleryProps> = ({ onOpenProject 
         })}
       </div>
 
-      {/* ——— الشبكة التحريرية غير المتماثلة ———
-          كل بطاقة تأخذ عرضًا وارتفاعًا مختلفين حسب ترتيبها، فلا
-          تتكوّن صفوف متساوية تُقرأ كجدول. على الموبايل تنهار الشبكة
-          إلى عمود واحد بنسبة أبعاد موحّدة. */}
-      <motion.div layout={!reduceMotion} className="grid grid-cols-1 gap-5 sm:gap-7 md:grid-cols-12">
-        <AnimatePresence mode="popLayout" initial={false}>
-          {visible.map((project, index) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              index={index}
-              onOpen={() => onOpenProject(project)}
-            />
-          ))}
-        </AnimatePresence>
-      </motion.div>
+      {/* ——— عرض المشاريع ———
+          على الموبايل: سلايدر أفقي بتقنية scroll-snap مع مؤشر نقاط.
+          على الشاشات الكبيرة: الشبكة التحريرية غير المتماثلة كما كانت. */}
+      {isMobile ? (
+        <MobileCarousel projects={visible} onOpenProject={onOpenProject} />
+      ) : (
+        <motion.div layout={!reduceMotion} className="grid gap-7 md:grid-cols-12">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {visible.map((project, index) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                index={index}
+                onOpen={() => onOpenProject(project)}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
 
       {/* ——— حالة فارغة ———
           لا يمكن الوصول إليها ببيانات اليوم، لكنها تُكتب الآن لا
@@ -148,6 +174,194 @@ export const ProjectsGallery: React.FC<ProjectsGalleryProps> = ({ onOpenProject 
         </div>
       )}
     </SectionShell>
+  );
+};
+
+/* ============================================================
+   سلايدر الموبايل — carousel أفقي بتقنية CSS scroll-snap
+   ============================================================ */
+
+interface MobileCarouselProps {
+  projects: ProjectItem[];
+  onOpenProject: (project: ProjectItem) => void;
+}
+
+const MobileCarousel: React.FC<MobileCarouselProps> = ({ projects, onOpenProject }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
+
+  /** تتبع الشريحة النشطة عبر مراقبة التمرير الأفقي. */
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollLeft = el.scrollLeft;
+    const cardWidth = el.firstElementChild
+      ? (el.firstElementChild as HTMLElement).offsetWidth
+      : el.offsetWidth;
+    // نحسب الفهرس بناءً على أقرب بطاقة إلى المنتصف
+    const gap = 12; // gap-3 = 12px
+    const idx = Math.round(scrollLeft / (cardWidth + gap));
+    setActiveIndex(Math.min(idx, projects.length - 1));
+  }, [projects.length]);
+
+  /** التمرير المبرمج إلى بطاقة بعينها. */
+  const scrollTo = useCallback((idx: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const child = el.children[idx] as HTMLElement | undefined;
+    child?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, []);
+
+  /** إعادة تعيين الشريحة عند تغيّر البيانات (الفلترة). */
+  useEffect(() => {
+    setActiveIndex(0);
+    scrollRef.current?.scrollTo({ left: 0 });
+  }, [projects]);
+
+  return (
+    <div>
+      {/* ——— حاوية التمرير الأفقي ——— */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="mobile-carousel -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-4"
+        role="region"
+        aria-label="معرض المشاريع — اسحب يمينًا ويسارًا"
+      >
+        {projects.map((project, index) => (
+          <motion.div
+            key={project.id}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{
+              duration: 0.5,
+              ease: [0.23, 1, 0.32, 1],
+              delay: reduceMotion ? 0 : Math.min(index, 3) * 0.06,
+            }}
+            className="spotlight bezel group relative aspect-[4/3] w-[82vw] shrink-0 snap-center"
+          >
+            <div className="bezel-core relative h-full w-full">
+              <div className="absolute inset-0" style={{ background: project.gradient }} />
+
+              <SmartImage
+                src={project.coverUrl}
+                alt={`${project.name}، ${project.category} في ${project.location}`}
+                className="scale-[1.03]"
+              />
+
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(10,11,12,0.35) 0%, rgba(10,11,12,0.10) 40%, rgba(10,11,12,0.90) 100%)',
+                }}
+              />
+
+              <div
+                className="absolute inset-x-0 bottom-0 p-4 pb-14 text-right"
+                style={{ zIndex: 'var(--z-base)' }}
+              >
+                <div className="mb-2 flex items-center gap-2 text-[10px] font-light text-[var(--color-office-on-dark)]/55">
+                  <span>{project.category}</span>
+                  {project.status !== 'مكتمل' && (
+                    <>
+                      <span
+                        aria-hidden="true"
+                        className="inline-block h-1 w-1 rounded-full bg-[var(--color-office-gold)]"
+                      />
+                      <span className="text-[var(--color-office-gold)]">{project.status}</span>
+                    </>
+                  )}
+                </div>
+
+                <h3 className="text-xl leading-tight font-normal text-[var(--color-office-on-dark)]">
+                  {project.name}
+                </h3>
+
+                <div className="mt-1.5 flex items-baseline gap-2 text-[10px] font-light text-[var(--color-office-on-dark)]/50">
+                  <span>{project.location}</span>
+                  <span aria-hidden="true" className="inline-block h-3 w-px bg-[var(--color-office-on-dark)]/20" />
+                  <span className="tabular">{project.year}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onOpenProject(project)}
+                aria-label={`فتح ملف مشروع ${project.name}`}
+                className="absolute inset-0 cursor-pointer"
+                style={{ zIndex: 'calc(var(--z-base) + 1)' }}
+              >
+                <span className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full border border-[var(--color-office-on-dark)]/15 bg-black/35 py-1.5 pr-3.5 pl-1.5 text-[10px] text-[var(--color-office-on-dark)]/85 backdrop-blur-md">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-office-gold)] text-[var(--color-office-on-gold)]">
+                    <ArrowUpLeft className="h-3 w-3" weight="bold" />
+                  </span>
+                  <span>الملف الكامل</span>
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ——— شريط التحكم: أسهم + مؤشر نقاط ——— */}
+      {projects.length > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-3">
+          {/* سهم يمين (السابق في RTL) */}
+          <button
+            onClick={() => {
+              const next = Math.min(activeIndex + 1, projects.length - 1);
+              setActiveIndex(next);
+              scrollTo(next);
+            }}
+            disabled={activeIndex >= projects.length - 1}
+            aria-label="المشروع السابق"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-30 cursor-pointer"
+          >
+            <CaretRight className="h-3.5 w-3.5" weight="bold" />
+          </button>
+
+          {/* النقاط */}
+          <div className="flex items-center gap-1.5">
+            {projects.map((p, i) => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  setActiveIndex(i);
+                  scrollTo(i);
+                }}
+                aria-label={`الانتقال إلى ${p.name}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ease-[var(--ease-out)] cursor-pointer ${
+                  i === activeIndex
+                    ? 'w-6 bg-[var(--color-office-gold)]'
+                    : 'w-1.5 bg-[var(--color-office-ink)]/20 hover:bg-[var(--color-office-ink)]/40'
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* سهم يسار (التالي في RTL) */}
+          <button
+            onClick={() => {
+              const next = Math.max(activeIndex - 1, 0);
+              setActiveIndex(next);
+              scrollTo(next);
+            }}
+            disabled={activeIndex <= 0}
+            aria-label="المشروع التالي"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-30 cursor-pointer"
+          >
+            <CaretLeft className="h-3.5 w-3.5" weight="bold" />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

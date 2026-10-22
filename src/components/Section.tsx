@@ -1,5 +1,5 @@
-import React from 'react';
-import { Reveal, RevealWords, DrawLine } from './Reveal';
+import React from "react";
+import { Reveal, RevealWords, DrawLine } from "./Reveal";
 
 /**
  * ============================================================
@@ -30,7 +30,7 @@ export const SectionShell: React.FC<SectionShellProps> = ({
   id,
   children,
   fullHeight = false,
-  className = '',
+  className = "",
 }) => (
   <section
     id={id}
@@ -42,8 +42,8 @@ export const SectionShell: React.FC<SectionShellProps> = ({
       // اعتماد هذه الأقسام على التوسيط الرأسي (min-h-dvh) بدل الحشو
       // وحده لخلق التوازن.
       fullHeight
-        ? 'flex flex-col justify-center py-20 sm:py-24 lg:min-h-dvh lg:py-28'
-        : 'py-24 sm:py-32'
+        ? "flex flex-col justify-center py-12 sm:py-16 lg:py-20"
+        : "py-12 sm:py-16"
     } ${className}`}
   >
     <div className="relative mx-auto w-full max-w-7xl">{children}</div>
@@ -60,7 +60,9 @@ interface SectionHeadingProps {
   className?: string;
 }
 
-export const SectionEyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const SectionEyebrow: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
   <Reveal y={10}>
     <span className="flex items-center gap-3">
       <span className="h-px w-8 bg-[var(--color-office-gold)]" />
@@ -76,28 +78,30 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
   title,
   lead,
   compact = false,
-  className = '',
+  className = "",
 }) => (
-  <div className={`${compact ? 'mb-8' : 'mb-12 sm:mb-16'} max-w-3xl ${className}`}>
+  <div
+    className={`${compact ? "mb-8" : "mb-12 sm:mb-16"} max-w-3xl ${className}`}
+  >
     <SectionEyebrow>{eyebrow}</SectionEyebrow>
 
     <h2
       className={`mt-5 font-normal text-[var(--color-office-ink)] ${
         compact
-          ? 'text-2xl leading-[1.4] sm:text-3xl md:text-4xl'
-          : 'text-3xl leading-[1.4] sm:text-4xl md:text-5xl md:leading-[1.35]'
+          ? "text-2xl leading-[1.4] sm:text-3xl md:text-4xl"
+          : "text-3xl leading-[1.4] sm:text-4xl md:text-5xl md:leading-[1.35]"
       }`}
     >
       <RevealWords text={title} />
     </h2>
 
-    <DrawLine className={`${compact ? 'mt-5' : 'mt-6'} w-24`} delay={0.25} />
+    <DrawLine className={`${compact ? "mt-5" : "mt-6"} w-24`} delay={0.25} />
 
     {lead && (
       <Reveal delay={0.12}>
         <p
           className={`mt-6 max-w-[62ch] font-light text-[var(--color-office-muted)] ${
-            compact ? 'text-sm leading-[1.85]' : 'text-base leading-[1.9]'
+            compact ? "text-sm leading-[1.85]" : "text-base leading-[1.9]"
           }`}
         >
           {lead}

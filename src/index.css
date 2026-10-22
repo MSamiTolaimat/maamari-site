@@ -409,3 +409,16 @@
 .skip-link:focus-visible {
   transform: translateY(0);
 }
+
+/*
+  سلايدر الموبايل الأفقي: يخفي شريط التمرير الأفقي ليبقى العرض
+  نظيفًا، بينما scroll-snap يتولى الالتقاط بين البطاقات.
+*/
+.mobile-carousel {
+  scrollbar-width: none;            /* Firefox */
+  -ms-overflow-style: none;         /* IE/Edge القديم */
+  -webkit-overflow-scrolling: touch; /* زخم تمرير سلس على iOS */
+}
+.mobile-carousel::-webkit-scrollbar {
+  display: none;                    /* Chrome / Safari */
+}

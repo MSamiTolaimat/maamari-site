@@ -1,5 +1,5 @@
-import React from 'react';
-import { Reveal, RevealWords } from './Reveal';
+import React from "react";
+import { Reveal, RevealWords } from "./Reveal";
 
 /**
  * ============================================================
@@ -21,7 +21,7 @@ import { Reveal, RevealWords } from './Reveal';
 export const PhilosophyStatement: React.FC = () => (
   <section
     id="philosophy-section"
-    className="relative w-full px-6 py-32 text-[var(--color-office-ink)] sm:px-16 sm:py-40"
+    className="relative w-full px-6 py-16 text-[var(--color-office-ink)] sm:px-16 sm:py-20"
   >
     <div className="relative mx-auto flex max-w-6xl flex-col items-center justify-center text-center">
       {/* علامة ذهبية مركزية */}

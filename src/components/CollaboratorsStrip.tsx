@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * ============================================================
@@ -19,14 +19,14 @@ import React from 'react';
  */
 
 const COLLABORATORS = [
-  'بناء الأفق للمقاولات',
-  'استوديو ضوء، دبي',
-  'مجموعة صدى الهندسية',
-  'مصنع الحرفة للنجارة',
-  'أمانة منطقة الرياض',
-  'مجموعة نجد للضيافة',
-  'محاجر الرياض للحجر الطبيعي',
-  'دارين للاستشارات',
+  "بناء الأفق للمقاولات",
+  "استوديو ضوء، دبي",
+  "مجموعة صدى الهندسية",
+  "مصنع الحرفة للنجارة",
+  "أمانة منطقة الرياض",
+  "مجموعة نجد للضيافة",
+  "محاجر الرياض للحجر الطبيعي",
+  "دارين للاستشارات",
 ];
 
 export const CollaboratorsStrip: React.FC = () => (
@@ -37,11 +37,15 @@ export const CollaboratorsStrip: React.FC = () => (
   // يفقد الشريط طابعه كـ"موجة عابرة" رفيعة الكثافة داخليًا
   // (الحشو الداخلي py-4 بقي كما هو؛ الإضافة كلها في الحافة
   // الخارجية حيث يبدأ التحوّل من القسم السابق وإليه).
-  <div className="relative px-0 py-14 sm:py-16">
+  <div className="relative px-0 py-7 sm:py-8">
     <div className="marquee-mask relative overflow-hidden py-4">
       <div className="animate-marquee flex w-max items-center gap-10 sm:gap-16">
         {[0, 1].map((copy) => (
-          <div key={copy} aria-hidden={copy === 1} className="flex items-center gap-10 sm:gap-16">
+          <div
+            key={copy}
+            aria-hidden={copy === 1}
+            className="flex items-center gap-10 sm:gap-16"
+          >
             {COLLABORATORS.map((name) => (
               <span
                 key={name}

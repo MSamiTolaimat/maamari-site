@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   EnvelopeSimple,
   Phone,
@@ -9,38 +9,38 @@ import {
   CheckCircle,
   ArrowLeft,
   X,
-} from '@phosphor-icons/react';
-import { Reveal, RevealWords, DrawLine } from './Reveal';
-import { SectionEyebrow } from './Section';
-import { ar } from '../lib/numerals';
+} from "@phosphor-icons/react";
+import { Reveal, RevealWords, DrawLine } from "./Reveal";
+import { SectionEyebrow } from "./Section";
+import { ar } from "../lib/numerals";
 
 const PROJECT_TYPES = [
-  'فيلا سكنية خاصة',
-  'بنتهاوس أو شقة فاخرة',
-  'مقر عمل أو جناح تنفيذي',
-  'قصر أو مجمع سكني خاص',
-  'أخرى',
+  "فيلا سكنية خاصة",
+  "بنتهاوس أو شقة فاخرة",
+  "مقر عمل أو جناح تنفيذي",
+  "قصر أو مجمع سكني خاص",
+  "أخرى",
 ];
 
-const MAP_QUERY = 'الرياض، حي الملقا، مكتب المعماري للتصميم الداخلي';
-const INQUIRY_EMAIL = 'inquiry@al-maamari.sa';
+const MAP_QUERY = "الرياض، حي الملقا، مكتب المعماري للتصميم الداخلي";
+const INQUIRY_EMAIL = "inquiry@al-maamari.sa";
 
 /** نصوص الصفحات القانونية. مختصرة عمدًا، ومكتوبة لتُقرأ لا لتُملأ. */
 const LEGAL = {
   privacy: {
-    title: 'سياسة الخصوصية',
+    title: "سياسة الخصوصية",
     body: [
-      'هذا الموقع تعريفي ولا يحتوي على نظام تسجيل أو حسابات. لا نضع ملفات تتبّع إعلانية، ولا نستخدم أدوات تحليل تُعرّف الزائر شخصيًا.',
-      'نموذج طلب الاستشارة لا يرسل بياناتك إلى خادم لدينا: بالضغط على زر الإرسال يُفتح تطبيق البريد على جهازك برسالة معبّأة مسبقًا، وأنت من يرسلها. أي بيانات تصلنا بهذه الطريقة تُستخدم للرد على طلبك فقط، ولا تُشارك مع أي طرف ثالث.',
-      'لطلب حذف مراسلاتك من سجلاتنا، راسلنا على البريد المذكور في هذه الصفحة.',
+      "هذا الموقع تعريفي ولا يحتوي على نظام تسجيل أو حسابات. لا نضع ملفات تتبّع إعلانية، ولا نستخدم أدوات تحليل تُعرّف الزائر شخصيًا.",
+      "نموذج طلب الاستشارة لا يرسل بياناتك إلى خادم لدينا: بالضغط على زر الإرسال يُفتح تطبيق البريد على جهازك برسالة معبّأة مسبقًا، وأنت من يرسلها. أي بيانات تصلنا بهذه الطريقة تُستخدم للرد على طلبك فقط، ولا تُشارك مع أي طرف ثالث.",
+      "لطلب حذف مراسلاتك من سجلاتنا، راسلنا على البريد المذكور في هذه الصفحة.",
     ],
   },
   terms: {
-    title: 'شروط الاستخدام',
+    title: "شروط الاستخدام",
     body: [
-      'كل الصور والرسوم والنصوص المعروضة هنا مملوكة لمكتب المعماري أو مستخدمة بترخيص. لا يجوز إعادة نشرها أو استخدامها تجاريًا دون إذن كتابي.',
-      'الأرقام والمساحات ومدد التنفيذ المذكورة في ملفات المشاريع مبنية على مشاريع منفّذة، وتُعرض للاطلاع لا كتعهّد تعاقدي. كل مشروع يخضع لعقد مستقل يحدد النطاق والجدول والمقابل.',
-      'الجلسة الاستشارية الأولى غير مُلزمة للطرفين ولا تنشئ أي التزام تعاقدي قبل توقيع العقد.',
+      "كل الصور والرسوم والنصوص المعروضة هنا مملوكة لمكتب المعماري أو مستخدمة بترخيص. لا يجوز إعادة نشرها أو استخدامها تجاريًا دون إذن كتابي.",
+      "الأرقام والمساحات ومدد التنفيذ المذكورة في ملفات المشاريع مبنية على مشاريع منفّذة، وتُعرض للاطلاع لا كتعهّد تعاقدي. كل مشروع يخضع لعقد مستقل يحدد النطاق والجدول والمقابل.",
+      "الجلسة الاستشارية الأولى غير مُلزمة للطرفين ولا تنشئ أي التزام تعاقدي قبل توقيع العقد.",
     ],
   },
 } as const;
@@ -77,8 +77,8 @@ export const ContactFooter: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [openLegal, setOpenLegal] = useState<LegalKey | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    contact: '',
+    name: "",
+    contact: "",
     projectType: PROJECT_TYPES[0],
   });
   const [errors, setErrors] = useState<{ name?: string; contact?: string }>({});
@@ -88,13 +88,14 @@ export const ContactFooter: React.FC = () => {
   const validate = () => {
     const next: { name?: string; contact?: string } = {};
     if (formData.name.trim().length < 3) {
-      next.name = 'اكتب اسمًا لا يقل عن ثلاثة أحرف حتى نعرف بمن نتواصل.';
+      next.name = "اكتب اسمًا لا يقل عن ثلاثة أحرف حتى نعرف بمن نتواصل.";
     }
     const contact = formData.contact.trim();
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact);
     const isPhone = /^\+?[\d\s()-]{9,}$/.test(contact);
     if (!isEmail && !isPhone) {
-      next.contact = 'أدخل بريدًا إلكترونيًا صحيحًا أو رقم هاتف لا يقل عن تسعة أرقام.';
+      next.contact =
+        "أدخل بريدًا إلكترونيًا صحيحًا أو رقم هاتف لا يقل عن تسعة أرقام.";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -113,7 +114,7 @@ export const ContactFooter: React.FC = () => {
       `الاسم: ${formData.name}`,
       `وسيلة التواصل: ${formData.contact}`,
       `طبيعة المشروع: ${formData.projectType}`,
-    ].join('\n');
+    ].join("\n");
 
     window.location.href = `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(
       subject,
@@ -126,11 +127,15 @@ export const ContactFooter: React.FC = () => {
   // role="radiogroup" القياسي الذي تتوقعه قارئات الشاشة.
   const handleTagKeyDown = (e: React.KeyboardEvent, idx: number) => {
     let nextIdx: number | null = null;
-    if (e.key === 'ArrowRight') nextIdx = (idx + 1) % PROJECT_TYPES.length;
-    if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + PROJECT_TYPES.length) % PROJECT_TYPES.length;
+    if (e.key === "ArrowRight") nextIdx = (idx + 1) % PROJECT_TYPES.length;
+    if (e.key === "ArrowLeft")
+      nextIdx = (idx - 1 + PROJECT_TYPES.length) % PROJECT_TYPES.length;
     if (nextIdx !== null) {
       e.preventDefault();
-      setFormData((prev) => ({ ...prev, projectType: PROJECT_TYPES[nextIdx!] }));
+      setFormData((prev) => ({
+        ...prev,
+        projectType: PROJECT_TYPES[nextIdx!],
+      }));
       tagRefs.current[nextIdx]?.focus();
     }
   };
@@ -138,14 +143,14 @@ export const ContactFooter: React.FC = () => {
   const fieldClass = (hasError: boolean) =>
     `w-full rounded-none border-0 border-b bg-transparent px-0 py-2.5 text-sm text-[var(--color-office-ink)] transition-[border-color] duration-200 ease-[var(--ease-out)] placeholder-[var(--color-office-ink)]/30 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-office-gold)] ${
       hasError
-        ? 'border-[#D4736A] focus:border-[#D4736A]'
-        : 'border-[var(--color-office-ink)]/20 focus:border-[var(--color-office-gold)]'
+        ? "border-[#D4736A] focus:border-[#D4736A]"
+        : "border-[var(--color-office-ink)]/20 focus:border-[var(--color-office-gold)]"
     }`;
 
   return (
     <footer
       id="contact-section"
-      className="relative w-full px-5 py-24 text-[var(--color-office-ink)] sm:px-8 sm:py-32 md:px-12"
+      className="relative w-full px-5 py-12 text-[var(--color-office-ink)] sm:px-8 sm:py-16 md:px-12"
     >
       <div className="relative mx-auto max-w-7xl">
         {/* شبكة RTL عادية: أول عنصر في الشجرة يقع يمينًا. */}
@@ -165,8 +170,8 @@ export const ContactFooter: React.FC = () => {
 
             <Reveal delay={0.12}>
               <p className="mt-6 mb-10 max-w-lg text-sm leading-[1.9] font-light text-[var(--color-office-ink)]/60 sm:text-base">
-                الجلسة الأولى غير مُلزمة، ونستخدمها لفهم طبيعة المساحة وطموح المشروع قبل أي التزام
-                تعاقدي.
+                الجلسة الأولى غير مُلزمة، ونستخدمها لفهم طبيعة المساحة وطموح
+                المشروع قبل أي التزام تعاقدي.
               </p>
             </Reveal>
 
@@ -234,7 +239,10 @@ export const ContactFooter: React.FC = () => {
           {/* ——— النموذج ———
               العنصر الوحيد في القسم الذي يأخذ سطحًا محددًا، فيُقرأ
               كأداة تفاعلية مستقلة لا كعمود جدولي. */}
-          <Reveal delay={0.1} className="flex flex-col justify-center lg:col-span-5">
+          <Reveal
+            delay={0.1}
+            className="flex flex-col justify-center lg:col-span-5"
+          >
             <div className="bezel">
               <div className="bezel-core p-6 text-right sm:p-8">
                 {isSubmitted ? (
@@ -250,15 +258,19 @@ export const ContactFooter: React.FC = () => {
                       رسالتك جاهزة للإرسال
                     </h3>
                     <p className="max-w-sm text-xs leading-relaxed text-[var(--color-office-ink)]/70">
-                      شكرًا لك {formData.name}، فتحنا تطبيق البريد لديك برسالة معبّأة بتفاصيل مشروعك
-                      ({formData.projectType}). أكمل إرسالها وسيتواصل معك أحد مهندسينا خلال يوم عمل
-                      واحد.
+                      شكرًا لك {formData.name}، فتحنا تطبيق البريد لديك برسالة
+                      معبّأة بتفاصيل مشروعك ({formData.projectType}). أكمل
+                      إرسالها وسيتواصل معك أحد مهندسينا خلال يوم عمل واحد.
                     </p>
                     <button
                       onClick={() => {
                         setIsSubmitted(false);
                         setErrors({});
-                        setFormData({ name: '', contact: '', projectType: PROJECT_TYPES[0] });
+                        setFormData({
+                          name: "",
+                          contact: "",
+                          projectType: PROJECT_TYPES[0],
+                        });
                       }}
                       className="cursor-pointer pt-1 text-xs text-[var(--color-office-gold)] hover:underline"
                     >
@@ -266,7 +278,11 @@ export const ContactFooter: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} noValidate className="space-y-6">
+                  <form
+                    onSubmit={handleSubmit}
+                    noValidate
+                    className="space-y-6"
+                  >
                     <div>
                       <span className="mb-1 block text-xs font-medium tracking-wider text-[var(--color-office-gold)]">
                         حجز استشارة
@@ -291,15 +307,21 @@ export const ContactFooter: React.FC = () => {
                         value={formData.name}
                         onChange={(e) => {
                           setFormData({ ...formData, name: e.target.value });
-                          if (errors.name) setErrors({ ...errors, name: undefined });
+                          if (errors.name)
+                            setErrors({ ...errors, name: undefined });
                         }}
                         aria-invalid={Boolean(errors.name)}
-                        aria-describedby={errors.name ? 'client-name-error' : undefined}
+                        aria-describedby={
+                          errors.name ? "client-name-error" : undefined
+                        }
                         placeholder="الاسم الثلاثي أو اللقب"
                         className={fieldClass(Boolean(errors.name))}
                       />
                       {errors.name && (
-                        <p id="client-name-error" className="mt-2 text-[11px] text-[#D4736A]">
+                        <p
+                          id="client-name-error"
+                          className="mt-2 text-[11px] text-[#D4736A]"
+                        >
                           {errors.name}
                         </p>
                       )}
@@ -322,15 +344,21 @@ export const ContactFooter: React.FC = () => {
                         value={formData.contact}
                         onChange={(e) => {
                           setFormData({ ...formData, contact: e.target.value });
-                          if (errors.contact) setErrors({ ...errors, contact: undefined });
+                          if (errors.contact)
+                            setErrors({ ...errors, contact: undefined });
                         }}
                         aria-invalid={Boolean(errors.contact)}
-                        aria-describedby={errors.contact ? 'client-contact-error' : undefined}
+                        aria-describedby={
+                          errors.contact ? "client-contact-error" : undefined
+                        }
                         placeholder="05XXXXXXXX أو البريد الإلكتروني"
                         className={`${fieldClass(Boolean(errors.contact))} text-right`}
                       />
                       {errors.contact && (
-                        <p id="client-contact-error" className="mt-2 text-[11px] text-[#D4736A]">
+                        <p
+                          id="client-contact-error"
+                          className="mt-2 text-[11px] text-[#D4736A]"
+                        >
                           {errors.contact}
                         </p>
                       )}
@@ -359,12 +387,14 @@ export const ContactFooter: React.FC = () => {
                               ref={(el) => {
                                 tagRefs.current[idx] = el;
                               }}
-                              onClick={() => setFormData({ ...formData, projectType: type })}
+                              onClick={() =>
+                                setFormData({ ...formData, projectType: type })
+                              }
                               onKeyDown={(e) => handleTagKeyDown(e, idx)}
                               className={`w-full cursor-pointer rounded-[var(--radius-field)] border px-3 py-2 text-center text-xs leading-snug transition-[color,border-color,background-color,transform] duration-200 ease-[var(--ease-out)] hover:scale-[1.03] active:scale-[0.97] ${
                                 active
-                                  ? 'border-[var(--color-office-gold)] bg-[var(--color-office-gold)]/10 text-[var(--color-office-gold)]'
-                                  : 'border-[var(--color-office-ink)]/15 text-[var(--color-office-ink)]/60 hover:border-[var(--color-office-ink)]/35 hover:text-[var(--color-office-ink)]/85'
+                                  ? "border-[var(--color-office-gold)] bg-[var(--color-office-gold)]/10 text-[var(--color-office-gold)]"
+                                  : "border-[var(--color-office-ink)]/15 text-[var(--color-office-ink)]/60 hover:border-[var(--color-office-ink)]/35 hover:text-[var(--color-office-ink)]/85"
                               }`}
                             >
                               {type}
@@ -395,26 +425,33 @@ export const ContactFooter: React.FC = () => {
             aria-label="روابط قانونية"
             className="order-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:order-1"
           >
-            <span>مكتب المعماري للتصميم الداخلي © {ar(new Date().getFullYear())}</span>
-            <span aria-hidden="true" className="h-3 w-px bg-[var(--color-office-ink)]/15" />
+            <span>
+              مكتب المعماري للتصميم الداخلي © {ar(new Date().getFullYear())}
+            </span>
+            <span
+              aria-hidden="true"
+              className="h-3 w-px bg-[var(--color-office-ink)]/15"
+            />
             <button
-              onClick={() => setOpenLegal('privacy')}
+              onClick={() => setOpenLegal("privacy")}
               className="cursor-pointer transition-colors duration-200 hover:text-[var(--color-office-gold)]"
             >
               سياسة الخصوصية
             </button>
             <button
-              onClick={() => setOpenLegal('terms')}
+              onClick={() => setOpenLegal("terms")}
               className="cursor-pointer transition-colors duration-200 hover:text-[var(--color-office-gold)]"
             >
               شروط الاستخدام
             </button>
-            <span className="tabular text-[var(--color-office-ink)]/30">س.ت 1010472931</span>
+            <span className="tabular text-[var(--color-office-ink)]/30">
+              س.ت 1010472931
+            </span>
           </nav>
 
           <button
             id="footer-scroll-top-btn"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="group order-1 flex cursor-pointer items-center gap-1.5 text-[var(--color-office-gold)] transition-[filter,transform] duration-200 ease-[var(--ease-out)] hover:scale-[1.04] hover:brightness-110 active:scale-[0.97] sm:order-2"
             aria-label="العودة لأعلى الصفحة"
           >
@@ -438,10 +475,10 @@ export const ContactFooter: React.FC = () => {
  * الأسفل على الموبايل ومن جهة البداية على الشاشات الأوسع، وتخرج
  * من حيث دخلت: المسار المتماثل هو ما يجعل الإغلاق مفهومًا.
  */
-const LegalPanel: React.FC<{ activeKey: LegalKey | null; onClose: () => void }> = ({
-  activeKey,
-  onClose,
-}) => {
+const LegalPanel: React.FC<{
+  activeKey: LegalKey | null;
+  onClose: () => void;
+}> = ({ activeKey, onClose }) => {
   const reduceMotion = useReducedMotion();
   const closeRef = useRef<HTMLButtonElement>(null);
   const open = activeKey !== null;
@@ -449,15 +486,15 @@ const LegalPanel: React.FC<{ activeKey: LegalKey | null; onClose: () => void }> 
   useEffect(() => {
     if (!open) return;
     const html = document.documentElement;
-    html.classList.add('scroll-locked');
+    html.classList.add("scroll-locked");
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    window.addEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
     const t = window.setTimeout(() => closeRef.current?.focus(), 80);
     return () => {
-      html.classList.remove('scroll-locked');
-      window.removeEventListener('keydown', onKey);
+      html.classList.remove("scroll-locked");
+      window.removeEventListener("keydown", onKey);
       window.clearTimeout(t);
     };
   }, [open, onClose]);
@@ -475,13 +512,17 @@ const LegalPanel: React.FC<{ activeKey: LegalKey | null; onClose: () => void }> 
           transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           onClick={onClose}
           className="fixed inset-0 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-          style={{ zIndex: 'var(--z-overlay)' }}
+          style={{ zIndex: "var(--z-overlay)" }}
         >
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }}
+            initial={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }
+            }
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
+            exit={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }
+            }
             transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
             className="bezel w-full max-w-xl"
           >

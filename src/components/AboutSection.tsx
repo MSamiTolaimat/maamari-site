@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   motion,
   useInView,
@@ -6,10 +6,10 @@ import {
   useReducedMotion,
   useTransform,
   type MotionValue,
-} from 'motion/react';
-import { Reveal, RevealWords, DrawLine } from './Reveal';
-import { SectionEyebrow } from './Section';
-import { ar } from '../lib/numerals';
+} from "motion/react";
+import { Reveal, RevealWords, DrawLine } from "./Reveal";
+import { SectionEyebrow } from "./Section";
+import { ar } from "../lib/numerals";
 
 interface AboutSectionProps {
   heroExitProgress?: MotionValue<number>;
@@ -35,7 +35,9 @@ const EASE_OUT = [0.23, 1, 0.32, 1] as const;
  * دخوله الشاشة، وتعليقاته بالعربية وبالأرقام الهندية.
  * ============================================================
  */
-export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) => {
+export const AboutSection: React.FC<AboutSectionProps> = ({
+  heroExitProgress,
+}) => {
   const reduceMotion = useReducedMotion();
 
   const fallbackProgress = useMotionValue(1);
@@ -44,15 +46,21 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
   // مرآة مباشرة لخروج الهيرو: نفس الرقم يقود اختفاء الهيرو وظهور
   // هذا القسم في اللحظة نفسها، فتصبح حركة واحدة متصلة بدل مشهدين
   // يتزامنان بالمصادفة.
-  const sectionOpacity = useTransform(progress, (v: number) => (reduceMotion ? 1 : v));
+  const sectionOpacity = useTransform(progress, (v: number) =>
+    reduceMotion ? 1 : v,
+  );
 
   /** خط في المخطط: يُرسم من الصفر عند دخوله الشاشة. */
   const draw = (delay: number, duration = 1.1) => ({
     initial: reduceMotion ? { opacity: 0 } : { pathLength: 0, opacity: 0 },
     whileInView: { pathLength: 1, opacity: 1 },
-    viewport: { once: true, margin: '0px 0px -80px 0px' },
+    viewport: { once: true, margin: "0px 0px -80px 0px" },
     transition: {
-      pathLength: { duration: reduceMotion ? 0 : duration, delay, ease: EASE_OUT },
+      pathLength: {
+        duration: reduceMotion ? 0 : duration,
+        delay,
+        ease: EASE_OUT,
+      },
       opacity: { duration: 0.25, delay },
     },
   });
@@ -61,12 +69,15 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
   const appear = (delay: number) => ({
     initial: { opacity: 0 },
     whileInView: { opacity: 1 },
-    viewport: { once: true, margin: '0px 0px -80px 0px' },
+    viewport: { once: true, margin: "0px 0px -80px 0px" },
     transition: { duration: 0.5, delay, ease: EASE_OUT },
   });
 
   return (
-    <section id="about-section" className="relative px-5 py-24 sm:px-8 sm:py-32 md:px-12">
+    <section
+      id="about-section"
+      className="relative px-5 py-12 sm:px-8 sm:py-16 md:px-12"
+    >
       <motion.div
         className="relative mx-auto max-w-7xl will-change-[opacity]"
         style={{ opacity: sectionOpacity }}
@@ -85,18 +96,22 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
             <div className="mt-8 space-y-5 text-base leading-[1.95] font-light text-[var(--color-office-ink)]/75 sm:text-lg">
               <Reveal delay={0.1}>
                 <p className="max-w-[62ch]">
-                  تأسس مكتب{' '}
-                  <strong className="font-medium text-[var(--color-office-ink)]">المعماري</strong>{' '}
-                  بدافع واحد: إعادة الاعتبار لدقة التفاصيل التنفيذية في العمارة الداخلية. نؤمن بأن
-                  الفراغ الراقي لا يتحقق بالمبالغة في الديكور، بل بالانضباط الهندسي وتناغم المواد
-                  الطبيعية وتوجيه الضوء لخدمة السكون البصري.
+                  تأسس مكتب{" "}
+                  <strong className="font-medium text-[var(--color-office-ink)]">
+                    المعماري
+                  </strong>{" "}
+                  بدافع واحد: إعادة الاعتبار لدقة التفاصيل التنفيذية في العمارة
+                  الداخلية. نؤمن بأن الفراغ الراقي لا يتحقق بالمبالغة في
+                  الديكور، بل بالانضباط الهندسي وتناغم المواد الطبيعية وتوجيه
+                  الضوء لخدمة السكون البصري.
                 </p>
               </Reveal>
               <Reveal delay={0.18}>
                 <p className="max-w-[62ch]">
-                  لأننا نرفض نموذج «الإنتاج الكمي»، نلتزم بعدد محدود جدًا من المشاريع سنويًا. هذا
-                  يسمح لمهندسينا بالتواجد الميداني المستمر، ومطابقة كل مليمتر في الموقع مع ما خُطط
-                  له على الورق، من أول فكرة تخطيطية وحتى التسليم النهائي.
+                  لأننا نرفض نموذج «الإنتاج الكمي»، نلتزم بعدد محدود جدًا من
+                  المشاريع سنويًا. هذا يسمح لمهندسينا بالتواجد الميداني المستمر،
+                  ومطابقة كل مليمتر في الموقع مع ما خُطط له على الورق، من أول
+                  فكرة تخطيطية وحتى التسليم النهائي.
                 </p>
               </Reveal>
             </div>
@@ -131,9 +146,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
                 >
                   {/* محاور الشبكة الإنشائية */}
                   {[
-                    ['40', '50', '360', '50'],
-                    ['40', '200', '360', '200'],
-                    ['40', '340', '360', '340'],
+                    ["40", "50", "360", "50"],
+                    ["40", "200", "360", "200"],
+                    ["40", "340", "360", "340"],
                   ].map(([x1, y1, x2, y2], i) => (
                     <motion.line
                       key={`h-${i}`}
@@ -149,9 +164,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
                     />
                   ))}
                   {[
-                    ['80', '30', '80', '360'],
-                    ['220', '30', '220', '360'],
-                    ['330', '30', '330', '360'],
+                    ["80", "30", "80", "360"],
+                    ["220", "30", "220", "360"],
+                    ["330", "30", "330", "360"],
                   ].map(([x1, y1, x2, y2], i) => (
                     <motion.line
                       key={`v-${i}`}
@@ -239,11 +254,11 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
 
                   {/* الأعمدة الإنشائية */}
                   {[
-                    ['80', '70', '12'],
-                    ['318', '70', '12'],
-                    ['80', '308', '12'],
-                    ['318', '308', '12'],
-                    ['214', '184', '10'],
+                    ["80", "70", "12"],
+                    ["318", "70", "12"],
+                    ["80", "308", "12"],
+                    ["318", "308", "12"],
+                    ["214", "184", "10"],
                   ].map(([x, y, s], i) => (
                     <motion.rect
                       key={`c-${i}`}
@@ -393,10 +408,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ heroExitProgress }) 
 /* ============================================================ */
 
 const LEDGER = [
-  { value: 68, suffix: '', label: 'مشروعًا مُسلَّمًا' },
-  { value: 12, suffix: '', label: 'سنة من الممارسة' },
-  { value: 94, suffix: '%', label: 'تسليم ضمن الجدول' },
-  { value: 31, suffix: ' ألف', label: 'م2 مصمَّمة' },
+  { value: 68, suffix: "", label: "مشروعًا مُسلَّمًا" },
+  { value: 12, suffix: "", label: "سنة من الممارسة" },
+  { value: 94, suffix: "%", label: "تسليم ضمن الجدول" },
+  { value: 31, suffix: " ألف", label: "م2 مصمَّمة" },
 ];
 
 /**
@@ -414,7 +429,7 @@ const LEDGER = [
  */
 const LedgerRow: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: '0px 0px -80px 0px' });
+  const inView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
 
   return (
     <div
