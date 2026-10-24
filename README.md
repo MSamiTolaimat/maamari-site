@@ -1,104 +1,57 @@
-# مكتب المعماري، الموقع التعريفي
+# Maamari
 
-موقع تعريفي لمكتب عمارة داخلية، مبني بـ **React 19 + TypeScript + Vite + Tailwind v4 + Motion**.
+An Arabic-language portfolio website for an architecture firm, with a dark, elegant design that highlights the firm's projects and design philosophy. The site supports right-to-left (RTL) layout.
 
-## أين تعدّل ماذا
+🔗 **Live site:** https://maamari-site.vercel.app
 
-هذه أهم قائمة في الملف. كل شيء قابل للتعديل من مكان واحد:
+## Features
 
-| ما تريد تغييره | الملف | ملاحظات |
-|---|---|---|
-| **المشاريع كلها** (أسماء، صور، بيانات فنية، خامات، جدول زمني) | `src/data/projects.ts` | مصدر الحقيقة الوحيد. المعرض وصفحة التفاصيل يقرآن منه معًا |
-| **الألوان** | `src/index.css`، كتلة `@theme` | لا توجد أي قيمة hex في ملفات المكوّنات |
-| **الخطوط** | `src/main.tsx` (الاستيراد) و`src/index.css` (`font-family`) | El Messiri للعناوين، IBM Plex Sans Arabic للنص |
-| **الأرقام وأسماء المتعاونين** | `src/components/CollaboratorsStrip.tsx` | ثابت `COLLABORATORS`؛ الأرقام نفسها في `AboutSection.tsx` (`LEDGER`) |
-| **شهادات العملاء** | `src/components/TestimonialsSection.tsx` | |
-| **مراحل العمل 01 إلى 04** | `src/components/WorkflowSection.tsx`، مصفوفة `stages` | عرض أفقي دوّار، شاشة واحدة |
-| **بيانات التواصل والنصوص القانونية** | `src/components/ContactFooter.tsx`، ثوابت أعلى الملف | `LEGAL` يحمل نصّي الخصوصية والشروط |
-| **روابط التنقّل** | `src/components/Navigation.tsx`، `NAV_ITEMS` | المعرّف يجب أن يطابق `id` القسم |
-| **وسوم SEO والفافيكون** | `index.html` | الفافيكون مُضمَّن كـ SVG داخل الملف، وصورة المشاركة في `public/og-cover.jpg` |
-| **تنسيق الأرقام** | `src/lib/numerals.ts` | دالة `ar()` هي المصدر الوحيد؛ تُخرج أرقامًا لاتينية (1-9) |
+- **About:** An introduction to the firm and its experience.
+- **Philosophy:** A statement summarizing the firm's vision and approach.
+- **Projects Gallery:** A showcase of work, with a dedicated detail page for each project.
+- **Collaborators:** A strip displaying partner organizations.
+- **Testimonials:** Feedback from past clients.
+- **Contact:** Contact details in the page footer.
 
----
+## Tech Stack
 
----
+- [React](https://react.dev/) and TypeScript
+- [Vite](https://vite.dev/) for development and builds
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- Arabic web fonts: IBM Plex Sans Arabic and El Messiri
+- Deployed on [Vercel](https://vercel.com/)
 
-## البنية
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview the production build
+npm run preview
+```
+
+After running `npm run dev`, open the URL printed in the terminal (usually `http://localhost:3000`).
+
+## Project Structure
 
 ```
 src/
-├── data/
-│   └── projects.ts          ← بيانات المشاريع (عدّل هنا أولًا)
-├── lib/
-│   └── numerals.ts          ← تنسيق الأرقام (أرقام لاتينية موحّدة)
-├── types.ts                 ← تعريفات الأنواع المركزية
-├── index.css                ← الألوان، الخطوط، المنحنيات، قفل الشكل، سلّم الطبقات
-├── components/
-│   ├── Reveal.tsx                بدائيات الحركة المشتركة
-│   ├── Section.tsx               غلاف القسم وترويسته
-│   ├── Atmosphere.tsx            طبقة الإضاءة العامة + رفيق المؤشر
-│   ├── Preloader.tsx         01  شاشة المقدمة
-│   ├── HeroCurtain.tsx       02  الهيرو المثبّت
-│   ├── AboutSection.tsx      03  من نحن (يضمّ صف الأرقام)
-│   ├── CollaboratorsStrip.tsx 04 شريط المتعاونين
-│   ├── WorkflowSection.tsx   05  منهجية التنفيذ (عرض أفقي دوّار، شاشة واحدة)
-│   ├── ProjectsGallery.tsx   06  فهرس الأعمال
-│   ├── ProjectDetail.tsx     07  صفحة تفاصيل المشروع
-│   ├── TestimonialsSection.tsx 08 آراء الملّاك
-│   ├── PhilosophyStatement.tsx 09 بيان الفلسفة
-│   ├── ContactFooter.tsx     10  التواصل والتذييل
-│   ├── Navigation.tsx            الشريط العلوي
-│   ├── ScrollProgressBar.tsx     مؤشر التمرير
-│   └── SmartImage.tsx            صورة بحالات تحميل وفشل
-└── App.tsx
+├── components/   # Page sections (About, ProjectsGallery, Testimonials, ...)
+├── index.css     # Global styles
+└── ...
 ```
 
----
+## Deployment
 
-## قواعد معمارية في الكود
+The site is deployed automatically to Vercel on every push to the `main` branch.
 
-هذه ليست تفضيلات. كسرها يُنتج أخطاء حقيقية:
+## Author
 
-1. **لا قيمة لون ثابتة (hex) داخل أي مكوّن.** استخدم `var(--color-office-*)`.
-2. **لا رقم `z-index` خام.** استخدم `var(--z-*)` من `index.css`. السلّم:
-   `sticky 10 → rail 20 → nav 30 → progress 40 → intro 50 → overlay 60 → lightbox 70 → grain 80 → cursor 90`.
-3. **الحركة على `transform` و `opacity` فقط.** لا `width` ولا `height`
-   ولا `top/left`: تُشغّل حساب تخطيط في كل إطار.
-   في Motion استخدم سلسلة `transform` كاملة لا خصائص `x`/`y`/`scale`
-   المنفصلة، وخصوصًا إن كنت تجمع إزاحة وتكبيرًا في نفس العنصر.
-4. **المنحنيات من المتغيّرات الأربعة الموجودة** (`--ease-out`, `--ease-in-out`,
-   `--ease-drawer`, `--ease-gentle`). لا تخترع `cubic-bezier` جديدًا.
-5. **مدة حركة الواجهة تحت 300مل.** ما يتجاوزها هو الحركات السردية
-   (كشف عند التمرير، دخول الهيرو) فقط.
-6. **`prefers-reduced-motion` مُعالج على مستويين**: حارس عام في `index.css`،
-   و `useReducedMotion()` داخل المكوّنات لحركات JS.
-7. **`hover:` مقيّد تلقائيًا** بأجهزة المؤشر الدقيق عبر `@custom-variant`
-   في `index.css`. لا تكرّر media query.
-8. **كل زر حقيقي (بحدّ أو خلفية أو شكل دائري) يكبر قليلًا عند التحويم**
-   (`hover:scale-[1.02]` إلى `hover:scale-110` حسب حجم الزر). الاستثناء:
-   الروابط النصية البسيطة (لون فقط)، وبطاقات "spotlight" التي لها لغة
-   تحويم خاصة بها (توهّج الحافة)، وأزرار الصور الكاملة التي قد تتجاوز
-   حاوية `overflow-hidden` عند التكبير.
-9. **ثلاثة أنصاف أقطار فقط** (قفل الشكل): `--radius-shell` للأسطح الخارجية،
-   `--radius-core` للنواة داخلها، `--radius-field` للحقول والأزرار المستطيلة،
-   و`rounded-full` للعناصر الدائرية. لا تضف رابعًا.
-10. **الأرقام لاتينية موحّدة (1-9) في كل الموقع.** مرّرها بـ `ar()` من
-    `src/lib/numerals.ts` حتى لو كانت أصلًا لاتينية — نقطة عبور واحدة
-    تمنع رجوع خلط الأنظمة مستقبلًا.
-11. **الرقم التسلسلي يظهر حيث يعني تسلسلًا فقط**: مراحل التنفيذ الأربع،
-    وحركات السرد الثلاث في صفحة المشروع. لا أرقام أقسام زخرفية، ولا عدّاد
-    "1 / 4" حيث توجد نقاط تقدّم تقول الشيء نفسه بصريًا.
-12. **الوسم العلوي (eyebrow) إلزامي في كل قسم.** كل قسم يحمل اسمه فوق
-    عنوانه بنفس الشكل (`SectionEyebrow` في `Section.tsx`).
-13. **لا فقرة تجاور عنوان القسم في عمود منفصل** ("عنوان يمينًا وفقرة
-    شارحة يسارًا"). إن احتاج القسم فقرة تمهيدية فهي تحت العنوان في نفس
-    العمود، لا بجانبه.
-14. **الحركة تدخل من `Reveal` و `RevealWords` و `DrawLine`** في
-    `components/Reveal.tsx`. لا تكتب `whileInView` بأرقام جديدة في مكوّن.
-15. **إيقاع الحشو الرأسي بين الأقسام**: `py-24 sm:py-32` للأقسام العادية،
-    `py-20 sm:py-24 lg:py-28` للأقسام التي تملأ شاشة كاملة (`fullHeight`
-    في `SectionShell`). لا فجوة أكبر من ذلك بين قسمين متجاورين إلا لسبب
-    مقصود ومُعلَّق عليه (مثل بيان الفلسفة، الأوسع عمدًا بصفته لحظة مفردة).
-
----
-
+Sami - sami.tolaimat@gmail.com
