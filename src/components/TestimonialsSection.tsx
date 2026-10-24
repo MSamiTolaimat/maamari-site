@@ -290,15 +290,15 @@ const MobileTestimonialsCarousel: React.FC<MobileTestimonialsCarouselProps> = ({
 
       {/* ——— شريط التحكم: أسهم + مؤشر نقاط ——— */}
       <div className="mt-4 flex items-center justify-center gap-3">
-        {/* زر السابق (يمين في RTL) */}
+        {/* زر يمين: ينقل النقطة والشهادة إلى اليمين */}
         <button
           onClick={() => {
-            const next = Math.min(activeIndex + 1, testimonials.length - 1);
+            const next = Math.max(0, activeIndex - 1);
             setActiveIndex(next);
             scrollTo(next);
           }}
-          disabled={activeIndex >= testimonials.length - 1}
-          aria-label="الشهادة السابقة"
+          disabled={activeIndex <= 0}
+          aria-label="الشهادة السابقة (يمين)"
           className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-25 cursor-pointer"
         >
           <CaretRight className="h-3.5 w-3.5" weight="bold" />
@@ -323,15 +323,15 @@ const MobileTestimonialsCarousel: React.FC<MobileTestimonialsCarouselProps> = ({
           ))}
         </div>
 
-        {/* زر التالي (يسار في RTL) */}
+        {/* زر يسار: ينقل النقطة والشهادة إلى اليسار */}
         <button
           onClick={() => {
-            const next = Math.max(activeIndex - 1, 0);
+            const next = Math.min(testimonials.length - 1, activeIndex + 1);
             setActiveIndex(next);
             scrollTo(next);
           }}
-          disabled={activeIndex <= 0}
-          aria-label="الشهادة التالية"
+          disabled={activeIndex >= testimonials.length - 1}
+          aria-label="الشهادة التالية (يسار)"
           className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-25 cursor-pointer"
         >
           <CaretLeft className="h-3.5 w-3.5" weight="bold" />

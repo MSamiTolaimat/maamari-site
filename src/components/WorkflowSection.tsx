@@ -97,10 +97,28 @@ const stages: (WorkStage & { icon: React.ElementType; image: string })[] = [
 const TOTAL = stages.length;
 const EASE = [0.23, 1, 0.32, 1] as const;
 
+/** كشف شاشات الموبايل لتخصيص حركة الدوّار */
+const useIsMobile = (breakpoint = 640) => {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 export const WorkflowSection: React.FC = () => {
   const [active, setActive] = useState(0);
   const reduceMotion = useReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile(640);
 
   const go = useCallback((delta: number) => {
     setActive((prev) => (prev + delta + TOTAL) % TOTAL);
@@ -140,18 +158,7 @@ export const WorkflowSection: React.FC = () => {
           className="mb-0 max-w-2xl"
         />
 
-        {/* ——— الدوّار ———
-            الشرائح مطلقة الموضع فوق بعضها، وموضع كل واحدة يُحسب من
-            بُعدها الدائري عن الشريحة النشطة. هذا ما يجعل الدوران
-            لا نهائيًا بلا استنساخ عناصر: المرحلة الأولى تقع "بعد"
-            الرابعة لأن الفارق الدائري بينهما واحد.
-
-            الأسهم كانت فوق البطاقة، بجانب عنوان القسم. نزلت إلى
-            جانبي البطاقة نفسها (سهم يمين وسهم يسار) لأن مكانها
-            الطبيعي حيث يقع الفعل، لا في ترويسة منفصلة عنه. عداد
-            "1 / 4" الذي كان بينهما حُذف: شريط النقاط أسفل البطاقة
-            يقول الشيء نفسه بصريًا، وتكراره رقميًا زخرفة لا فائدة
-            إضافية منها. */}
+        {/* ——— الدوّار ——— */}
         <div
           ref={trackRef}
           tabIndex={0}
@@ -159,12 +166,13 @@ export const WorkflowSection: React.FC = () => {
           aria-roledescription="عرض دوّار"
           aria-label="مراحل التنفيذ الأربع"
           onKeyDown={handleKeyDown}
-          className="relative h-[30rem] w-full sm:h-[26rem] lg:h-[27rem]"
+          className="relative h-[32rem] sm:h-[26rem] lg:h-[27rem] w-full"
         >
+          {/* أسهم التنقل للشاشات المتوسطة والكبيرة */}
           <NavButton
             label="المرحلة السابقة"
             onClick={() => go(-1)}
-            className="right-0 sm:right-2 lg:right-4"
+            className="hidden sm:flex right-2 lg:right-4"
           >
             <CaretRight className="h-4 w-4" weight="bold" />
           </NavButton>
@@ -172,14 +180,12 @@ export const WorkflowSection: React.FC = () => {
           <NavButton
             label="المرحلة التالية"
             onClick={() => go(1)}
-            className="left-0 sm:left-2 lg:left-4"
+            className="hidden sm:flex left-2 lg:left-4"
           >
             <CaretLeft className="h-4 w-4" weight="bold" />
           </NavButton>
 
           {stages.map((stage, i) => {
-            // الفارق الدائري: يعطي ‎-1 و ‎0 و ‎1 و ‎2 بدل ‎0..3،
-            // فتبقى المسافة أقصر طريق على الدائرة لا على الخط.
             let offset = (i - active + TOTAL) % TOTAL;
             if (offset > TOTAL / 2) offset -= TOTAL;
 
@@ -195,25 +201,22 @@ export const WorkflowSection: React.FC = () => {
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.14}
                 onDragEnd={(_, info) => {
-                  // في RTL: سحب لليسار يعني "التالي".
                   if (info.offset.x < -70) go(1);
                   else if (info.offset.x > 70) go(-1);
                 }}
                 animate={{
-                  // النسبة المئوية من عرض الشريحة نفسها، فتبقى
-                  // المسافات متناسبة على كل مقاسات الشاشة.
-                  x: `${offset * -62}%`,
-                  scale: isActive ? 1 : 0.86,
-                  opacity: isActive ? 1 : isNeighbor ? 0.32 : 0,
-                  filter: isActive ? 'blur(0px)' : 'blur(5px)',
+                  x: isMobile ? `${offset * -100}%` : `${offset * -62}%`,
+                  scale: isMobile ? (isActive ? 1 : 0.95) : (isActive ? 1 : 0.86),
+                  opacity: isMobile ? (isActive ? 1 : 0) : (isActive ? 1 : isNeighbor ? 0.32 : 0),
+                  filter: isMobile ? 'none' : (isActive ? 'blur(0px)' : 'blur(5px)'),
                   zIndex: isActive ? 2 : 1,
                 }}
                 transition={
                   reduceMotion
                     ? { duration: 0.15 }
-                    : { duration: 0.62, ease: EASE, opacity: { duration: 0.45 } }
+                    : { duration: 0.55, ease: EASE, opacity: { duration: 0.35 } }
                 }
-                className={`absolute inset-y-0 left-1/2 w-[86%] -translate-x-1/2 sm:w-[78%] lg:w-[68%] ${
+                className={`absolute inset-y-0 left-1/2 w-[92%] -translate-x-1/2 sm:w-[78%] lg:w-[68%] ${
                   isActive ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
                 }`}
                 style={{ pointerEvents: isActive || isNeighbor ? 'auto' : 'none' }}
@@ -224,27 +227,45 @@ export const WorkflowSection: React.FC = () => {
           })}
         </div>
 
-        {/* ——— شريط التقدّم ———
-            أربعة خطوط لا أربع نقاط: الخط يشغل مساحة أفقية فيقرأ
-            كمسار له بداية ونهاية، وهو ما يصفه القسم فعلًا. */}
-        <div className="flex items-center justify-center gap-2">
-          {stages.map((stage, i) => (
-            <button
-              key={stage.number}
-              onClick={() => setActive(i)}
-              aria-label={`الانتقال إلى ${stage.title}`}
-              aria-current={active === i ? 'step' : undefined}
-              className="group cursor-pointer py-3"
-            >
-              <span
-                className={`block h-[2px] transition-[width,background-color] duration-500 ease-[var(--ease-out)] ${
-                  active === i
-                    ? 'w-14 bg-[var(--color-office-gold)]'
-                    : 'w-7 bg-[var(--color-office-ink)]/20 group-hover:bg-[var(--color-office-ink)]/40'
-                }`}
-              />
-            </button>
-          ))}
+        {/* ——— شريط التقدّم والتحكم ——— */}
+        <div className="flex items-center justify-center gap-3">
+          {/* زر السابق للموبايل */}
+          <button
+            onClick={() => go(-1)}
+            aria-label="المرحلة السابقة"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-opacity duration-200 cursor-pointer sm:hidden"
+          >
+            <CaretRight className="h-3.5 w-3.5" weight="bold" />
+          </button>
+
+          <div className="flex items-center justify-center gap-2">
+            {stages.map((stage, i) => (
+              <button
+                key={stage.number}
+                onClick={() => setActive(i)}
+                aria-label={`الانتقال إلى ${stage.title}`}
+                aria-current={active === i ? 'step' : undefined}
+                className="group cursor-pointer py-3"
+              >
+                <span
+                  className={`block h-[2px] transition-[width,background-color] duration-500 ease-[var(--ease-out)] ${
+                    active === i
+                      ? 'w-10 sm:w-14 bg-[var(--color-office-gold)]'
+                      : 'w-5 sm:w-7 bg-[var(--color-office-ink)]/20 group-hover:bg-[var(--color-office-ink)]/40'
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* زر التالي للموبايل */}
+          <button
+            onClick={() => go(1)}
+            aria-label="المرحلة التالية"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-opacity duration-200 cursor-pointer sm:hidden"
+          >
+            <CaretLeft className="h-3.5 w-3.5" weight="bold" />
+          </button>
         </div>
       </div>
     </SectionShell>
@@ -272,10 +293,6 @@ const NavButton: React.FC<{
 
 /**
  * بطاقة المرحلة.
- *
- * الصورة خلفية للبطاقة كلها لا عمود ثانٍ إلى جانبها: التقسيم إلى
- * نصفين هو ما جعل النسخة الأولى تُقرأ كجدول. النص يجلس فوق الصورة
- * خلف حجاب متدرّج، ويُقرأ عمودًا واحدًا متصلًا من أعلى لأسفل.
  */
 const StageCard: React.FC<{
   stage: WorkStage & { icon: React.ElementType; image: string };
@@ -286,16 +303,10 @@ const StageCard: React.FC<{
   return (
     <div className="bezel h-full w-full">
       <div className="bezel-core relative h-full w-full">
-        {/* الصورة في طبقة مطلقة لا في التدفق: جذر SmartImage عنصر
-            كتلي بارتفاع كامل، فلو بقي في التدفق لدفع النص أسفل
-            البطاقة وقصّته حافة bezel-core المخفية. */}
         <div aria-hidden="true" className="absolute inset-0">
           <SmartImage src={stage.image} alt="" className="scale-[1.04]" />
         </div>
 
-        {/* حجاب مزدوج: ثقيل جهة النص (اليمين في RTL) ليبقى التباين
-            مضمونًا مهما كانت الصورة، وأخف جهة اليسار فتبقى الصورة
-            مرئية لا مجرد خلفية داكنة. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
@@ -313,44 +324,42 @@ const StageCard: React.FC<{
           }}
         />
 
-        <div className="relative flex h-full flex-col justify-center p-6 text-right sm:p-9 lg:p-11">
+        <div className="relative flex h-full flex-col justify-center p-6 sm:p-9 lg:p-11 text-right">
           <div className="max-w-xl">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3.5 sm:gap-4">
               <span
                 aria-hidden="true"
-                className="tabular text-4xl leading-none font-normal text-[var(--color-office-gold)]/55 sm:text-5xl"
+                className="tabular text-3xl sm:text-5xl leading-none font-normal text-[var(--color-office-gold)]/55"
               >
                 {stage.number}
               </span>
-              <span className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-field)] border border-[var(--color-office-gold)]/25 bg-[var(--color-office-gold)]/[0.08] text-[var(--color-office-gold)]">
+              <span className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-[var(--radius-field)] border border-[var(--color-office-gold)]/25 bg-[var(--color-office-gold)]/[0.08] text-[var(--color-office-gold)]">
                 <Icon className="h-4 w-4" weight="light" />
               </span>
             </div>
 
-            <h3 className="mt-5 text-2xl leading-[1.35] font-normal text-[var(--color-office-on-dark)] sm:text-3xl lg:text-[2.1rem]">
+            <h3 className="mt-4 sm:mt-5 text-xl sm:text-3xl lg:text-[2.1rem] leading-[1.35] font-normal text-[var(--color-office-on-dark)]">
               {stage.title}
             </h3>
 
-            <p className="mt-2.5 text-xs text-[var(--color-office-gold)] sm:text-sm">
+            <p className="mt-1.5 sm:mt-2.5 text-xs sm:text-sm text-[var(--color-office-gold)]">
               {stage.subtitle}
             </p>
 
-            <p className="mt-5 max-w-[54ch] text-sm leading-[1.9] font-light text-[var(--color-office-on-dark)]/72 sm:text-[0.95rem]">
+            <p className="mt-3.5 sm:mt-5 max-w-[54ch] text-xs sm:text-[0.95rem] leading-[1.85] sm:leading-[1.9] font-light text-[var(--color-office-on-dark)]/72">
               {stage.description}
             </p>
 
-            {/* المخرجات الثلاثة: صف واحد بخط شعري علوي فقط. لا صندوق
-                ولا عمود ثانٍ. تظهر مع الشريحة النشطة وحدها، فلا
-                تُقرأ الشرائح المجاورة كنص متراكم خلف الضبابة. */}
-            <ul className="mt-7 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-3">
+            {/* المخرجات الثلاثة */}
+            <ul className="mt-5 sm:mt-7 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:gap-y-3.5 sm:grid-cols-3">
               {stage.details.map((detail, i) => (
                 <motion.li
                   key={detail}
                   animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 8 }}
                   transition={{ duration: 0.45, delay: isActive ? 0.18 + i * 0.07 : 0, ease: EASE }}
                 >
-                  <span className="mb-2 block h-px w-full bg-gradient-to-l from-[var(--color-office-gold)]/60 to-transparent" />
-                  <span className="block text-[11.5px] leading-[1.7] font-light text-[var(--color-office-on-dark)]/62">
+                  <span className="mb-1.5 sm:mb-2 block h-px w-full bg-gradient-to-l from-[var(--color-office-gold)]/60 to-transparent" />
+                  <span className="block text-[11px] sm:text-[11.5px] leading-[1.65] font-light text-[var(--color-office-on-dark)]/62">
                     {detail}
                   </span>
                 </motion.li>

@@ -174,7 +174,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
                   >
-                    <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
                       <span className="rounded-full border border-[var(--color-office-gold)]/40 bg-[var(--color-office-gold)]/10 px-2.5 py-1 text-[10px] tracking-[0.18em] text-[var(--color-office-gold)]">
                         {project.category}
                       </span>
@@ -191,7 +191,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                       {project.briefStatement}
                     </p>
 
-                    <div className="tabular mt-5 flex flex-wrap items-center justify-end gap-x-3 gap-y-1.5 text-[11px] text-[var(--color-office-on-dark)]/50 sm:text-xs">
+                    <div className="tabular mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-[var(--color-office-on-dark)]/50 sm:text-xs">
                       <span>{project.location}</span>
                       <span aria-hidden="true" className="h-3 w-px bg-[var(--color-office-on-dark)]/20" />
                       <span>{project.year}</span>
@@ -234,13 +234,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                   ].map((mv, i) => (
                     <Reveal key={mv.key} delay={i * 0.08}>
                       <article className="text-right">
-                        <div className="mb-3 flex items-center justify-end gap-2.5">
+                        <div className="mb-3 flex items-center gap-2.5">
+                          <span className="tabular text-xs font-medium text-[var(--color-office-gold)]">
+                            {mv.num}
+                          </span>
+                          <span aria-hidden="true" className="h-1 w-1 rounded-full bg-[var(--color-office-gold)]/60" />
                           <h3 className="text-base font-normal text-[var(--color-office-ink)]">
                             {mv.title}
                           </h3>
-                          <span className="tabular text-xs text-[var(--color-office-gold)]">
-                            {mv.num}
-                          </span>
                         </div>
                         <span
                           aria-hidden="true"
@@ -352,11 +353,11 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                     <Reveal key={s.name} delay={Math.min(i, 5) * 0.05}>
                       <div className="text-right">
                         <div className="mb-1.5 flex items-baseline justify-between gap-4">
-                          <span className="tabular text-[11px] text-[var(--color-office-muted)]">
-                            {s.area} · {ar(s.share)}%
-                          </span>
                           <span className="text-xs font-light text-[var(--color-office-ink)] sm:text-sm">
                             {s.name}
+                          </span>
+                          <span className="tabular text-[11px] text-[var(--color-office-muted)]">
+                            {s.area} · {ar(s.share)}%
                           </span>
                         </div>
 
@@ -396,15 +397,15 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                       <li className="relative pb-8 text-right last:pb-0">
                         <span
                           aria-hidden="true"
-                          className="absolute right-[-6px] top-1.5 h-[9px] w-[9px] rounded-full border border-[var(--color-office-gold)] bg-[var(--color-office-bg)]"
+                          className="absolute right-[-25px] top-1.5 h-[9px] w-[9px] rounded-full border border-[var(--color-office-gold)] bg-[var(--color-office-bg)]"
                         />
-                        <div className="mb-1 flex flex-wrap items-baseline justify-end gap-x-3">
-                          <span className="tabular text-[11px] text-[var(--color-office-muted)]/70">
-                            {p.period}
-                          </span>
+                        <div className="mb-1 flex flex-wrap items-baseline gap-x-3">
                           <h4 className="text-sm font-normal text-[var(--color-office-ink)]">
                             {p.label}
                           </h4>
+                          <span className="tabular text-[11px] text-[var(--color-office-muted)]/70">
+                            {p.period}
+                          </span>
                         </div>
                         <p className="text-xs font-light leading-relaxed text-[var(--color-office-muted)]">
                           {p.note}
@@ -422,14 +423,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                   <ul className="mt-6 space-y-3">
                     {project.recognition.map((r, i) => (
                       <Reveal key={r} delay={i * 0.06}>
-                        <li className="flex items-start justify-end gap-3 text-right">
-                          <span className="text-sm font-light leading-relaxed text-[var(--color-office-muted)]">
-                            {r}
-                          </span>
+                        <li className="flex items-start gap-3 text-right">
                           <span
                             aria-hidden="true"
                             className="mt-[7px] h-1.5 w-1.5 shrink-0 rotate-45 border border-[var(--color-office-gold)]"
                           />
+                          <span className="text-sm font-light leading-relaxed text-[var(--color-office-muted)]">
+                            {r}
+                          </span>
                         </li>
                       </Reveal>
                     ))}
@@ -486,11 +487,11 @@ const SectionLabel: React.FC<{ icon: React.ElementType; text: string }> = ({
   icon: Icon,
   text,
 }) => (
-  <div className="flex items-center justify-end gap-2.5">
+  <div className="flex items-center gap-2.5">
+    <Icon className="h-3.5 w-3.5 text-[var(--color-office-gold)]" weight="light" />
     <span className="text-[11px] tracking-[0.2em] text-[var(--color-office-gold)]">
       {text}
     </span>
-    <Icon className="h-3.5 w-3.5 text-[var(--color-office-gold)]" weight="light" />
     <span aria-hidden="true" className="h-px flex-1 bg-[var(--color-office-line)]" />
   </div>
 );

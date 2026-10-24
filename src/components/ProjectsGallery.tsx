@@ -191,26 +191,36 @@ const MobileCarousel: React.FC<MobileCarouselProps> = ({ projects, onOpenProject
   const [activeIndex, setActiveIndex] = useState(0);
   const reduceMotion = useReducedMotion();
 
-  /** تتبع الشريحة النشطة عبر مراقبة التمرير الأفقي. */
+  /** تتبع الشريحة النشطة عبر قياس الموضع بدقة مقارنة بالحاوية */
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const scrollLeft = el.scrollLeft;
-    const cardWidth = el.firstElementChild
-      ? (el.firstElementChild as HTMLElement).offsetWidth
-      : el.offsetWidth;
-    // نحسب الفهرس بناءً على أقرب بطاقة إلى المنتصف
-    const gap = 12; // gap-3 = 12px
-    const idx = Math.round(scrollLeft / (cardWidth + gap));
-    setActiveIndex(Math.min(idx, projects.length - 1));
-  }, [projects.length]);
+    const containerRect = el.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
 
-  /** التمرير المبرمج إلى بطاقة بعينها. */
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    Array.from(el.children).forEach((child, i) => {
+      const childRect = (child as HTMLElement).getBoundingClientRect();
+      const childCenter = childRect.left + childRect.width / 2;
+      const distance = Math.abs(containerCenter - childCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    });
+
+    setActiveIndex(closestIndex);
+  }, []);
+
+  /** التمرير المبرمج إلى بطاقة بعينها */
   const scrollTo = useCallback((idx: number) => {
     const el = scrollRef.current;
     if (!el) return;
     const child = el.children[idx] as HTMLElement | undefined;
-    child?.scrollIntoView({
+    if (!child) return;
+    child.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
       inline: 'center',
@@ -220,7 +230,10 @@ const MobileCarousel: React.FC<MobileCarouselProps> = ({ projects, onOpenProject
   /** إعادة تعيين الشريحة عند تغيّر البيانات (الفلترة). */
   useEffect(() => {
     setActiveIndex(0);
-    scrollRef.current?.scrollTo({ left: 0 });
+    const el = scrollRef.current;
+    if (!el) return;
+    const firstChild = el.firstElementChild as HTMLElement | undefined;
+    firstChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, [projects]);
 
   return (
@@ -313,16 +326,16 @@ const MobileCarousel: React.FC<MobileCarouselProps> = ({ projects, onOpenProject
       {/* ——— شريط التحكم: أسهم + مؤشر نقاط ——— */}
       {projects.length > 1 && (
         <div className="mt-4 flex items-center justify-center gap-3">
-          {/* سهم يمين (السابق في RTL) */}
+          {/* سهم يمين: ينقل النقطة والبطاقة إلى اليمين */}
           <button
             onClick={() => {
-              const next = Math.min(activeIndex + 1, projects.length - 1);
+              const next = Math.max(0, activeIndex - 1);
               setActiveIndex(next);
               scrollTo(next);
             }}
-            disabled={activeIndex >= projects.length - 1}
-            aria-label="المشروع السابق"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-30 cursor-pointer"
+            disabled={activeIndex <= 0}
+            aria-label="المشروع السابق (يمين)"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-25 cursor-pointer"
           >
             <CaretRight className="h-3.5 w-3.5" weight="bold" />
           </button>
@@ -346,16 +359,16 @@ const MobileCarousel: React.FC<MobileCarouselProps> = ({ projects, onOpenProject
             ))}
           </div>
 
-          {/* سهم يسار (التالي في RTL) */}
+          {/* سهم يسار: ينقل النقطة والبطاقة إلى اليسار */}
           <button
             onClick={() => {
-              const next = Math.max(activeIndex - 1, 0);
+              const next = Math.min(projects.length - 1, activeIndex + 1);
               setActiveIndex(next);
               scrollTo(next);
             }}
-            disabled={activeIndex <= 0}
-            aria-label="المشروع التالي"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-30 cursor-pointer"
+            disabled={activeIndex >= projects.length - 1}
+            aria-label="المشروع التالي (يسار)"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-office-line)] text-[var(--color-office-muted)] transition-[border-color,color,opacity] duration-200 disabled:opacity-25 cursor-pointer"
           >
             <CaretLeft className="h-3.5 w-3.5" weight="bold" />
           </button>
